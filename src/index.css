@@ -1,3 +1,53 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Neumorphism utility classes */
+@layer utilities {
+  .neomorphism {
+    background: #f0f0f3;
+    box-shadow: 
+      8px 8px 16px #d1d1d4,
+      -8px -8px 16px #ffffff;
+  }
+  
+  .neomorphism-inset {
+    background: #f0f0f3;
+    box-shadow: 
+      inset 8px 8px 16px #d1d1d4,
+      inset -8px -8px 16px #ffffff;
+  }
+  
+  .neomorphism-small {
+    background: #f0f0f3;
+    box-shadow: 
+      4px 4px 8px #d1d1d4,
+      -4px -4px 8px #ffffff;
+  }
+  
+  .neomorphism-hover {
+    transition: all 0.3s ease;
+  }
+  
+  .neomorphism-hover:hover {
+    box-shadow: 
+      12px 12px 24px #d1d1d4,
+      -12px -12px 24px #ffffff;
+    transform: translateY(-2px);
+  }
+  
+  .neomorphism-pressed {
+    box-shadow: 
+      inset 4px 4px 8px #d1d1d4,
+      inset -4px -4px 8px #ffffff;
+    transform: translateY(1px);
+  }
+  
+  .bg-neomorphism {
+    background: #f0f0f3;
+  }
+  
+  .text-neomorphism {
+    color: #2d3748;
+  }
+}

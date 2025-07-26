@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, Edit2, Trash2, Save, X } from 'lucide-react'
 import { TierList, Character } from '../lib/supabase'
 import { TierListService } from '../services/tierListService'
+
+import { ImageUpload } from './ImageUpload.tsx'
 
 interface AdminPanelProps {
   onBack: () => void
@@ -14,8 +16,16 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
   const [loading, setLoading] = useState(true)
   const [editingTierList, setEditingTierList] = useState<string | null>(null)
   const [editingCharacter, setEditingCharacter] = useState<string | null>(null)
-  const [newTierList, setNewTierList] = useState({ name: '', description: '', thumbnailUrl: '', makerName: '' })
-  const [newCharacter, setNewCharacter] = useState({ name: '', imageUrl: '' })
+  const [newTierList, setNewTierList] = useState({ 
+    name: '', 
+    description: '', 
+    thumbnail_url: '', 
+    maker_name: '' 
+  })
+  const [newCharacter, setNewCharacter] = useState({ 
+    name: '', 
+    image_url: '' 
+  })
   const [showNewTierListForm, setShowNewTierListForm] = useState(false)
   const [showNewCharacterForm, setShowNewCharacterForm] = useState(false)
 
@@ -60,11 +70,11 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
       const created = await TierListService.createTierList(
         newTierList.name,
         newTierList.description,
-        newTierList.thumbnailUrl,
-        newTierList.makerName
+        newTierList.thumbnail_url,
+        newTierList.maker_name
       )
       setTierLists([created, ...tierLists])
-      setNewTierList({ name: '', description: '', thumbnailUrl: '', makerName: '' })
+      setNewTierList({ name: '', description: '', thumbnail_url: '', maker_name: '' })
       setShowNewTierListForm(false)
       setSelectedTierList(created)
     } catch (error) {
@@ -106,10 +116,10 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
       const created = await TierListService.addCharacter(
         selectedTierList.id,
         newCharacter.name,
-        newCharacter.imageUrl
+        newCharacter.image_url
       )
       setCharacters([...characters, created])
-      setNewCharacter({ name: '', imageUrl: '' })
+      setNewCharacter({ name: '', image_url: '' })
       setShowNewCharacterForm(false)
     } catch (error) {
       console.error('Failed to create character:', error)
@@ -149,29 +159,29 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white py-4">
+    <div className="min-h-screen bg-neomorphism py-4">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-neomorphism rounded-xl font-medium"
           >
             <ArrowLeft size={20} />
             Back to Home
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
+          <h1 className="text-3xl font-bold text-neomorphism">Admin Panel</h1>
           <div></div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
           {/* Tier Lists Management */}
-          <div className="bg-white rounded-xl shadow-md p-4 lg:p-6 border border-gray-200">
+          <div className="neomorphism rounded-2xl p-4 lg:p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Tier Lists</h2>
+              <h2 className="text-2xl font-bold text-neomorphism">Tier Lists</h2>
               <button
                 onClick={() => setShowNewTierListForm(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-blue-700 rounded-xl font-medium"
               >
                 <Plus size={20} />
                 Add Tier List
@@ -180,7 +190,7 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
 
             {/* New Tier List Form */}
             {showNewTierListForm && (
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <div className="mb-6 p-4 neomorphism-inset rounded-xl">
                 <h3 className="font-semibold mb-3">Create New Tier List</h3>
                 <div className="space-y-3">
                   <input
@@ -188,40 +198,43 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                     placeholder="Tier List Name"
                     value={newTierList.name}
                     onChange={(e) => setNewTierList({ ...newTierList, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 neomorphism-inset rounded-xl focus:outline-none text-neomorphism"
                   />
                   <input
                     type="text"
                     placeholder="Description (optional)"
                     value={newTierList.description}
                     onChange={(e) => setNewTierList({ ...newTierList, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 neomorphism-inset rounded-xl focus:outline-none text-neomorphism"
                   />
                   <input
                     type="text"
                     placeholder="Maker Name (optional)"
-                    value={newTierList.makerName}
-                    onChange={(e) => setNewTierList({ ...newTierList, makerName: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    value={newTierList.maker_name}
+                    onChange={(e) => setNewTierList({ ...newTierList, maker_name: e.target.value })}
+                    className="w-full px-3 py-2 neomorphism-inset rounded-xl focus:outline-none text-neomorphism"
                   />
-                  <input
-                    type="url"
-                    placeholder="Thumbnail Image URL (optional)"
-                    value={newTierList.thumbnailUrl}
-                    onChange={(e) => setNewTierList({ ...newTierList, thumbnailUrl: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-neomorphism mb-2">
+                      Thumbnail Image
+                    </label>
+                    <ImageUpload
+                      onImageSelect={(imageUrl: string) => setNewTierList({ ...newTierList, thumbnail_url: imageUrl })}
+                      currentImage={newTierList.thumbnail_url}
+                      placeholder="Upload thumbnail"
+                    />
+                  </div>
                   <div className="flex gap-2">
                     <button
                       onClick={handleCreateTierList}
-                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-green-700 rounded-xl font-medium"
                     >
                       <Save size={16} />
                       Create
                     </button>
                     <button
                       onClick={() => setShowNewTierListForm(false)}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-gray-700 rounded-xl font-medium"
                     >
                       <X size={16} />
                       Cancel
@@ -236,10 +249,10 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
               {tierLists.map((tierList) => (
                 <div
                   key={tierList.id}
-                  className={`p-4 border rounded-lg cursor-pointer transition-colors ${
+                  className={`p-4 rounded-xl cursor-pointer transition-all ${
                     selectedTierList?.id === tierList.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'neomorphism-inset'
+                      : 'neomorphism-small neomorphism-hover'
                   }`}
                   onClick={() => setSelectedTierList(tierList)}
                 >
@@ -249,27 +262,25 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                         type="text"
                         defaultValue={tierList.name}
                         onBlur={(e) => handleUpdateTierList(tierList.id, { name: e.target.value })}
-                        className="w-full px-2 py-1 border border-gray-300 rounded"
+                        className="w-full px-2 py-1 neomorphism-inset rounded-lg focus:outline-none text-neomorphism"
                       />
                       <input
                         type="text"
                         defaultValue={tierList.description}
                         onBlur={(e) => handleUpdateTierList(tierList.id, { description: e.target.value })}
-                        className="w-full px-2 py-1 border border-gray-300 rounded"
+                        className="w-full px-2 py-1 neomorphism-inset rounded-lg focus:outline-none text-neomorphism"
                       />
                       <input
                         type="text"
                         defaultValue={tierList.maker_name}
                         placeholder="Maker Name"
-                        onBlur={(e) => handleUpdateTierList(tierList.id, { makerName: e.target.value })}
-                        className="w-full px-2 py-1 border border-gray-300 rounded"
+                        onBlur={(e) => handleUpdateTierList(tierList.id, { maker_name: e.target.value })}
+                        className="w-full px-2 py-1 neomorphism-inset rounded-lg focus:outline-none text-neomorphism"
                       />
-                      <input
-                        type="url"
-                        defaultValue={tierList.thumbnail_url}
-                        placeholder="Thumbnail URL"
-                        onBlur={(e) => handleUpdateTierList(tierList.id, { thumbnailUrl: e.target.value })}
-                        className="w-full px-2 py-1 border border-gray-300 rounded"
+                      <ImageUpload
+                        onImageSelect={(imageUrl: string) => handleUpdateTierList(tierList.id, { thumbnail_url: imageUrl })}
+                        currentImage={tierList.thumbnail_url}
+                        placeholder="Update thumbnail"
                       />
                     </div>
                   ) : (
@@ -282,7 +293,7 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                               e.stopPropagation()
                               setEditingTierList(tierList.id)
                             }}
-                            className="p-1 text-gray-500 hover:text-blue-600"
+                            className="p-1 text-gray-600 hover:text-blue-700"
                           >
                             <Edit2 size={16} />
                           </button>
@@ -291,15 +302,15 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                               e.stopPropagation()
                               handleDeleteTierList(tierList.id)
                             }}
-                            className="p-1 text-gray-500 hover:text-red-600"
+                            className="p-1 text-gray-600 hover:text-red-700"
                           >
                             <Trash2 size={16} />
                           </button>
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 mb-1">{tierList.description}</p>
+                      <p className="text-sm text-gray-700 mb-1">{tierList.description}</p>
                       {tierList.maker_name && (
-                        <p className="text-xs text-gray-400">by {tierList.maker_name}</p>
+                        <p className="text-xs text-gray-500">by {tierList.maker_name}</p>
                       )}
                     </div>
                   )}
@@ -309,12 +320,12 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
           </div>
 
           {/* Characters Management */}
-          <div className="bg-white rounded-xl shadow-md p-4 lg:p-6 border border-gray-200">
+          <div className="neomorphism rounded-2xl p-4 lg:p-6">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-neomorphism">
                 Characters
                 {selectedTierList && (
-                  <span className="text-lg font-normal text-gray-600 ml-2">
+                  <span className="text-lg font-normal text-gray-700 ml-2">
                     ({selectedTierList.name})
                   </span>
                 )}
@@ -322,7 +333,7 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
               {selectedTierList && (
                 <button
                   onClick={() => setShowNewCharacterForm(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-green-700 rounded-xl font-medium"
                 >
                   <Plus size={20} />
                   Add Character
@@ -331,12 +342,12 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
             </div>
 
             {!selectedTierList ? (
-              <p className="text-gray-600">Select a tier list to manage characters</p>
+              <p className="text-gray-700">Select a tier list to manage characters</p>
             ) : (
               <>
                 {/* New Character Form */}
                 {showNewCharacterForm && (
-                  <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <div className="mb-6 p-4 neomorphism-inset rounded-xl">
                     <h3 className="font-semibold mb-3">Add New Character</h3>
                     <div className="space-y-3">
                       <input
@@ -344,26 +355,29 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                         placeholder="Character Name"
                         value={newCharacter.name}
                         onChange={(e) => setNewCharacter({ ...newCharacter, name: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 neomorphism-inset rounded-xl focus:outline-none text-neomorphism"
                       />
-                      <input
-                        type="url"
-                        placeholder="Image URL (optional)"
-                        value={newCharacter.imageUrl}
-                        onChange={(e) => setNewCharacter({ ...newCharacter, imageUrl: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
+                      <div>
+                        <label className="block text-sm font-medium text-neomorphism mb-2">
+                          Character Image
+                        </label>
+                        <ImageUpload
+                          onImageSelect={(imageUrl: string) => setNewCharacter({ ...newCharacter, image_url: imageUrl })}
+                          currentImage={newCharacter.image_url}
+                          placeholder="Upload character image"
+                        />
+                      </div>
                       <div className="flex gap-2">
                         <button
                           onClick={handleCreateCharacter}
-                          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-green-700 rounded-xl font-medium"
                         >
                           <Save size={16} />
                           Add
                         </button>
                         <button
                           onClick={() => setShowNewCharacterForm(false)}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                          className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-gray-700 rounded-xl font-medium"
                         >
                           <X size={16} />
                           Cancel
@@ -376,20 +390,19 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                 {/* Characters List */}
                 <div className="space-y-3">
                   {characters.map((character) => (
-                    <div key={character.id} className="p-4 border border-gray-200 rounded-lg">
+                    <div key={character.id} className="p-4 neomorphism-small rounded-xl">
                       {editingCharacter === character.id ? (
                         <div className="space-y-2">
                           <input
                             type="text"
                             defaultValue={character.name}
                             onBlur={(e) => handleUpdateCharacter(character.id, { name: e.target.value })}
-                            className="w-full px-2 py-1 border border-gray-300 rounded"
+                            className="w-full px-2 py-1 neomorphism-inset rounded-lg focus:outline-none text-neomorphism"
                           />
-                          <input
-                            type="url"
-                            defaultValue={character.image_url}
-                            onBlur={(e) => handleUpdateCharacter(character.id, { image_url: e.target.value })}
-                            className="w-full px-2 py-1 border border-gray-300 rounded"
+                          <ImageUpload
+                            onImageSelect={(imageUrl: string) => handleUpdateCharacter(character.id, { image_url: imageUrl })}
+                            currentImage={character.image_url}
+                            placeholder="Update character image"
                           />
                         </div>
                       ) : (
@@ -398,7 +411,7 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                             <img
                               src={character.image_url || 'https://images.pexels.com/photos/6153354/pexels-photo-6153354.jpeg?auto=compress&cs=tinysrgb&w=400'}
                               alt={character.name}
-                              className="w-12 h-12 rounded-lg object-cover"
+                              className="w-12 h-12 rounded-xl object-cover neomorphism-small"
                               onError={(e) => {
                                 const target = e.target as HTMLImageElement
                                 target.src = 'https://images.pexels.com/photos/6153354/pexels-photo-6153354.jpeg?auto=compress&cs=tinysrgb&w=400'
@@ -406,19 +419,19 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                             />
                             <div>
                               <h4 className="font-semibold">{character.name}</h4>
-                              <p className="text-sm text-gray-600">Ready for battle</p>
+                              <p className="text-sm text-gray-700">Ready for battle</p>
                             </div>
                           </div>
                           <div className="flex gap-2">
                             <button
                               onClick={() => setEditingCharacter(character.id)}
-                              className="p-1 text-gray-500 hover:text-blue-600"
+                              className="p-1 text-gray-600 hover:text-blue-700"
                             >
                               <Edit2 size={16} />
                             </button>
                             <button
                               onClick={() => handleDeleteCharacter(character.id)}
-                              className="p-1 text-gray-500 hover:text-red-600"
+                              className="p-1 text-gray-600 hover:text-red-700"
                             >
                               <Trash2 size={16} />
                             </button>
@@ -430,7 +443,7 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                 </div>
 
                 {characters.length === 0 && (
-                  <p className="text-gray-600 text-center py-8">No characters in this tier list</p>
+                  <p className="text-gray-700 text-center py-8">No characters in this tier list</p>
                 )}
               </>
             )}

@@ -57,29 +57,29 @@ export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSele
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-neomorphism">
       {/* Header */}
-      <div className="bg-white border-b border-blue-400 px-4 py-6">
+      <div className="bg-neomorphism px-4 py-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-            Waifu Tier List Ranker
+          <h1 className="text-3xl sm:text-4xl font-bold text-neomorphism mb-2">
+            Waifu Tier List Maker
           </h1>
-          <p className="text-base sm:text-lg text-gray-600">
+          <p className="text-base sm:text-lg text-gray-700">
             Choose your tier list and start ranking your favorite characters
           </p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8 ">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Admin Button */}
         <div className="flex justify-center mb-6">
           <button
             onClick={onShowAdmin}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors text-sm"
+            className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-neomorphism rounded-xl font-medium text-sm"
           >
             <Settings size={16} />
-            Make your own
+            Make Your Own
           </button>
         </div>
 
@@ -89,7 +89,7 @@ export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSele
             <div
               key={tierList.id}
               onClick={() => onSelectTierList(tierList)}
-              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer transform hover:scale-105 border border-gray-200 overflow-hidden"
+              className="neomorphism neomorphism-hover rounded-2xl cursor-pointer overflow-hidden"
             >
               {/* Thumbnail placeholder */}
               <div className="h-32 sm:h-40 overflow-hidden">
@@ -105,7 +105,7 @@ export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSele
                     }}
                   />
                 ) : null}
-                <div className={`w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center ${tierList.thumbnail_url ? 'hidden' : ''}`}>
+                <div className={`w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center ${tierList.thumbnail_url ? 'hidden' : ''}`}>
                   <div className="text-white text-center">
                     <div className="text-2xl sm:text-3xl font-bold mb-1">
                       {tierList.name.charAt(0).toUpperCase()}
@@ -117,21 +117,21 @@ export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSele
               
               {/* Content */}
               <div className="p-4 sm:p-6">
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 line-clamp-2">
+                <h3 className="text-lg sm:text-xl font-semibold text-neomorphism mb-2 line-clamp-2">
                   {tierList.name}
                 </h3>
-                <p className="text-sm sm:text-base text-gray-600 mb-4 line-clamp-2">
+                <p className="text-sm sm:text-base text-gray-700 mb-4 line-clamp-2">
                   {tierList.description || 'No description available'}
                 </p>
                 <div className="flex justify-between items-center">
                   <div className="text-xs sm:text-sm text-gray-500">
                     {tierList.maker_name && (
-                      <div className="text-gray-400 mb-1">by {tierList.maker_name}</div>
+                      <div className="text-gray-500 mb-1">by {tierList.maker_name}</div>
                     )}
                     <div>{new Date(tierList.created_at).toLocaleDateString()}</div>
                   </div>
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Play size={14} className="text-blue-600 ml-0.5" />
+                  <div className="w-8 h-8 neomorphism-small rounded-full flex items-center justify-center">
+                    <Play size={14} className="text-blue-700 ml-0.5" />
                   </div>
                 </div>
               </div>
@@ -141,10 +141,10 @@ export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSele
 
         {tierLists.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-600 mb-4">No tier lists found</p>
+            <p className="text-gray-700 mb-4">No tier lists found</p>
             <button
               onClick={onShowAdmin}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-6 py-3 neomorphism neomorphism-hover text-neomorphism rounded-xl font-medium"
             >
               Create Your First Tier List
             </button>

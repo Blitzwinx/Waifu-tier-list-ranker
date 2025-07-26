@@ -176,28 +176,28 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
   const progressPercentage = (comparisonCount / totalComparisons) * 100
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-neomorphism">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4">
+      <div className="bg-neomorphism px-4 py-4 neomorphism-inset">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+            className="flex items-center gap-2 px-3 py-2 neomorphism-small neomorphism-hover text-neomorphism rounded-xl text-sm font-medium"
           >
             <ArrowLeft size={16} />
             Back
           </button>
 
           <div className="text-center flex-1 mx-4">
-            <h1 className="text-lg sm:text-xl font-bold text-gray-900">{tierList.name}</h1>
-            <p className="text-sm text-gray-600">
+            <h1 className="text-lg sm:text-xl font-bold text-neomorphism">{tierList.name}</h1>
+            <p className="text-sm text-gray-700">
               {comparisonCount} / {totalComparisons} battles
             </p>
           </div>
 
           <button
             onClick={onShowTierList}
-            className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+            className="px-3 py-2 neomorphism-small neomorphism-hover text-green-700 rounded-xl text-sm font-medium"
           >
             View List
           </button>
@@ -205,9 +205,9 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
 
         {/* Progress Bar */}
         <div className="max-w-4xl mx-auto mt-4">
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full neomorphism-inset rounded-full h-3">
             <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-300 shadow-sm"
               style={{ width: `${progressPercentage}%` }}
             ></div>
           </div>
@@ -219,8 +219,8 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
         <div className="w-full max-w-2xl mx-auto">
           {/* Question */}
           <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Who's Better?</h2>
-            <p className="text-gray-600">Tap your preferred character</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-neomorphism mb-2">Who's Better?</h2>
+            <p className="text-gray-700">Tap your preferred character</p>
           </div>
 
           {/* VS Section */}
@@ -230,7 +230,7 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
               {/* Character 1 */}
               <div
                 onClick={() => !comparing && handleChoice(char1.id, char2.id)}
-                className={`bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-xl ${
+                className={`neomorphism neomorphism-hover rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
                   comparing ? 'opacity-75 cursor-not-allowed' : ''
                 }`}
               >
@@ -246,7 +246,7 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
                   />
                 </div>
                 <div className="p-3 sm:p-4">
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 text-center truncate">
+                  <h3 className="text-lg sm:text-xl font-bold text-neomorphism text-center truncate">
                     {char1.name}
                   </h3>
                 </div>
@@ -255,7 +255,7 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
               {/* Character 2 */}
               <div
                 onClick={() => !comparing && handleChoice(char2.id, char1.id)}
-                className={`bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all duration-300 transform hover:scale-105 hover:shadow-xl ${
+                className={`neomorphism neomorphism-hover rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
                   comparing ? 'opacity-75 cursor-not-allowed' : ''
                 }`}
               >
@@ -271,7 +271,7 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
                   />
                 </div>
                 <div className="p-3 sm:p-4">
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 text-center truncate">
+                  <h3 className="text-lg sm:text-xl font-bold text-neomorphism text-center truncate">
                     {char2.name}
                   </h3>
                 </div>
@@ -280,7 +280,7 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
 
             {/* VS Badge */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="bg-gray-900 text-white rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center text-sm sm:text-lg font-bold shadow-lg">
+              <div className="neomorphism text-neomorphism rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center text-sm sm:text-lg font-bold">
                 VS
               </div>
             </div>
@@ -289,8 +289,8 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
           {/* Loading State */}
           {comparing && (
             <div className="text-center mt-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Recording your choice...</p>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700 mx-auto"></div>
+              <p className="mt-2 text-gray-700">Recording your choice...</p>
             </div>
           )}
         </div>
