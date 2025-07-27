@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
+import { ImageService } from '../services/imageService.ts'
 
 interface ImageUploadProps {
   onImageSelect: (imageUrl: string) => void
@@ -11,24 +12,23 @@ interface ImageUploadProps {
 export function ImageUpload({ onImageSelect, currentImage, placeholder = "Upload image" }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string>(currentImage || '')
+  const [error, setError] = useState<string>('')
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
     if (!file) return
 
     setUploading(true)
+    setError('')
     
     try {
-      // Convert file to base64 for preview
-      const reader = new FileReader()
-      reader.onload = () => {
-        const result = reader.result as string
-        setPreview(result)
-        onImageSelect(result)
-      }
-      reader.readAsDataURL(file)
+      // Upload to Supabase Storage
+      const imageUrl = await ImageService.uploadImage(file, 'uploads')
+      setPreview(imageUrl)
+      onImageSelect(imageUrl)
     } catch (error) {
       console.error('Error uploading image:', error)
+      setError(error instanceof Error ? error.message : 'Upload failed')
     } finally {
       setUploading(false)
     }
@@ -46,6 +46,7 @@ export function ImageUpload({ onImageSelect, currentImage, placeholder = "Upload
   const clearImage = () => {
     setPreview('')
     onImageSelect('')
+    setError('')
   }
 
   return (
@@ -85,7 +86,7 @@ export function ImageUpload({ onImageSelect, currentImage, placeholder = "Upload
             {uploading ? (
               <div className="flex flex-col items-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-                <p className="text-sm text-gray-600">Uploading...</p>
+                <p className="text-sm text-gray-600">Uploading to storage...</p>
               </div>
             ) : (
               <div className="flex flex-col items-center">
@@ -110,6 +111,12 @@ export function ImageUpload({ onImageSelect, currentImage, placeholder = "Upload
           </div>
         )}
       </div>
+      
+      {error && (
+        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-600">{error}</p>
+        </div>
+      )}
     </div>
   )
 }

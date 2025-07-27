@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, Edit2, Trash2, Save, X } from 'lucide-react'
 import { TierList, Character } from '../lib/supabase'
 import { TierListService } from '../services/tierListService'
+import { ImageService } from '../services/imageService.ts'
 
-import { ImageUpload } from './ImageUpload.tsx'
+import { ImageUpload } from './ImageUpload'
 
 interface AdminPanelProps {
   onBack: () => void
@@ -16,21 +17,15 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
   const [loading, setLoading] = useState(true)
   const [editingTierList, setEditingTierList] = useState<string | null>(null)
   const [editingCharacter, setEditingCharacter] = useState<string | null>(null)
-  const [newTierList, setNewTierList] = useState({ 
-    name: '', 
-    description: '', 
-    thumbnail_url: '', 
-    maker_name: '' 
-  })
-  const [newCharacter, setNewCharacter] = useState({ 
-    name: '', 
-    image_url: '' 
-  })
+  const [newTierList, setNewTierList] = useState({ name: '', description: '', thumbnailUrl: '', makerName: '' })
+  const [newCharacter, setNewCharacter] = useState({ name: '', imageUrl: '' })
   const [showNewTierListForm, setShowNewTierListForm] = useState(false)
   const [showNewCharacterForm, setShowNewCharacterForm] = useState(false)
+  const [storageReady, setStorageReady] = useState(false)
 
   useEffect(() => {
     loadTierLists()
+    checkStorageAccess()
   }, [])
 
   useEffect(() => {
@@ -54,6 +49,19 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
     }
   }
 
+  const checkStorageAccess = async () => {
+    try {
+      const isReady = await ImageService.checkStorageAccess()
+      setStorageReady(isReady)
+      if (!isReady) {
+        console.warn('Supabase Storage not accessible. Please check your setup.')
+      }
+    } catch (error) {
+      console.error('Storage access check failed:', error)
+      setStorageReady(false)
+    }
+  }
+
   const loadCharacters = async (tierListId: string) => {
     try {
       const chars = await TierListService.getCharacters(tierListId)
@@ -70,11 +78,11 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
       const created = await TierListService.createTierList(
         newTierList.name,
         newTierList.description,
-        newTierList.thumbnail_url,
-        newTierList.maker_name
+        newTierList.thumbnailUrl,
+        newTierList.makerName
       )
       setTierLists([created, ...tierLists])
-      setNewTierList({ name: '', description: '', thumbnail_url: '', maker_name: '' })
+      setNewTierList({ name: '', description: '', thumbnailUrl: '', makerName: '' })
       setShowNewTierListForm(false)
       setSelectedTierList(created)
     } catch (error) {
@@ -99,10 +107,18 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
     if (!confirm('Are you sure you want to delete this tier list?')) return
 
     try {
+      // Get tier list data to delete associated images
+      const tierListToDelete = tierLists.find(tl => tl.id === id)
+      
       await TierListService.deleteTierList(id)
       setTierLists(tierLists.filter(tl => tl.id !== id))
       if (selectedTierList?.id === id) {
         setSelectedTierList(tierLists.find(tl => tl.id !== id) || null)
+      }
+      
+      // Clean up thumbnail image if it exists
+      if (tierListToDelete?.thumbnail_url) {
+        ImageService.deleteImage(tierListToDelete.thumbnail_url).catch(console.error)
       }
     } catch (error) {
       console.error('Failed to delete tier list:', error)
@@ -116,10 +132,10 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
       const created = await TierListService.addCharacter(
         selectedTierList.id,
         newCharacter.name,
-        newCharacter.image_url
+        newCharacter.imageUrl
       )
       setCharacters([...characters, created])
-      setNewCharacter({ name: '', image_url: '' })
+      setNewCharacter({ name: '', imageUrl: '' })
       setShowNewCharacterForm(false)
     } catch (error) {
       console.error('Failed to create character:', error)
@@ -140,8 +156,16 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
     if (!confirm('Are you sure you want to delete this character?')) return
 
     try {
+      // Get character data to delete associated image
+      const characterToDelete = characters.find(c => c.id === id)
+      
       await TierListService.deleteCharacter(id)
       setCharacters(characters.filter(c => c.id !== id))
+      
+      // Clean up character image if it exists
+      if (characterToDelete?.image_url) {
+        ImageService.deleteImage(characterToDelete.image_url).catch(console.error)
+      }
     } catch (error) {
       console.error('Failed to delete character:', error)
     }
@@ -173,6 +197,15 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
           <h1 className="text-3xl font-bold text-neomorphism">Admin Panel</h1>
           <div></div>
         </div>
+
+        {!storageReady && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+            <p className="text-sm text-yellow-800">
+              <strong>Storage Warning:</strong> Supabase Storage may not be properly configured. 
+              Image uploads might not work correctly. Please check your Supabase setup.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
           {/* Tier Lists Management */}
@@ -210,8 +243,8 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                   <input
                     type="text"
                     placeholder="Maker Name (optional)"
-                    value={newTierList.maker_name}
-                    onChange={(e) => setNewTierList({ ...newTierList, maker_name: e.target.value })}
+                    value={newTierList.makerName}
+                    onChange={(e) => setNewTierList({ ...newTierList, makerName: e.target.value })}
                     className="w-full px-3 py-2 neomorphism-inset rounded-xl focus:outline-none text-neomorphism"
                   />
                   <div>
@@ -219,8 +252,8 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                       Thumbnail Image
                     </label>
                     <ImageUpload
-                      onImageSelect={(imageUrl: string) => setNewTierList({ ...newTierList, thumbnail_url: imageUrl })}
-                      currentImage={newTierList.thumbnail_url}
+                      onImageSelect={(imageUrl) => setNewTierList({ ...newTierList, thumbnailUrl: imageUrl })}
+                      currentImage={newTierList.thumbnailUrl}
                       placeholder="Upload thumbnail"
                     />
                   </div>
@@ -278,7 +311,7 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                         className="w-full px-2 py-1 neomorphism-inset rounded-lg focus:outline-none text-neomorphism"
                       />
                       <ImageUpload
-                        onImageSelect={(imageUrl: string) => handleUpdateTierList(tierList.id, { thumbnail_url: imageUrl })}
+                        onImageSelect={(imageUrl) => handleUpdateTierList(tierList.id, { thumbnail_url: imageUrl })}
                         currentImage={tierList.thumbnail_url}
                         placeholder="Update thumbnail"
                       />
@@ -362,8 +395,8 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                           Character Image
                         </label>
                         <ImageUpload
-                          onImageSelect={(imageUrl: string) => setNewCharacter({ ...newCharacter, image_url: imageUrl })}
-                          currentImage={newCharacter.image_url}
+                          onImageSelect={(imageUrl) => setNewCharacter({ ...newCharacter, imageUrl })}
+                          currentImage={newCharacter.imageUrl}
                           placeholder="Upload character image"
                         />
                       </div>
@@ -400,7 +433,7 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                             className="w-full px-2 py-1 neomorphism-inset rounded-lg focus:outline-none text-neomorphism"
                           />
                           <ImageUpload
-                            onImageSelect={(imageUrl: string) => handleUpdateCharacter(character.id, { image_url: imageUrl })}
+                            onImageSelect={(imageUrl) => handleUpdateCharacter(character.id, { image_url: imageUrl })}
                             currentImage={character.image_url}
                             placeholder="Update character image"
                           />
