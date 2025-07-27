@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Upload, X, Image as ImageIcon } from 'lucide-react'
-import { ImageService } from '../services/imageService.ts'
+import { ImageService } from '../services/imageService'
 
 interface ImageUploadProps {
   onImageSelect: (imageUrl: string) => void

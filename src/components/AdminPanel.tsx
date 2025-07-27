@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { ArrowLeft, Plus, Edit2, Trash2, Save, X } from 'lucide-react'
 import { TierList, Character } from '../lib/supabase'
 import { TierListService } from '../services/tierListService'
-import { ImageService } from '../services/imageService.ts'
+import { ImageService } from '../services/imageService'
 
 import { ImageUpload } from './ImageUpload'
 
