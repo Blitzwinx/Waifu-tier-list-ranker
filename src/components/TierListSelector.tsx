@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings, Play } from 'lucide-react'
+import { Settings, Play, Search } from 'lucide-react'
 import { TierList } from '../lib/supabase'
 import { TierListService } from '../services/tierListService'
 
@@ -10,6 +10,8 @@ interface TierListSelectorProps {
 
 export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSelectorProps) {
   const [tierLists, setTierLists] = useState<TierList[]>([])
+  const [filteredTierLists, setFilteredTierLists] = useState<TierList[]>([])
+  const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -22,12 +24,27 @@ export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSele
       setLoading(true)
       const lists = await TierListService.getTierLists()
       setTierLists(lists)
+      setFilteredTierLists(lists)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load tier lists')
     } finally {
       setLoading(false)
     }
   }
+
+  // Filter tier lists based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredTierLists(tierLists)
+    } else {
+      const filtered = tierLists.filter(tierList =>
+        tierList.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tierList.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        tierList.maker_name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      setFilteredTierLists(filtered)
+    }
+  }, [searchQuery, tierLists])
 
   if (loading) {
     return (
@@ -71,21 +88,35 @@ export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSele
       </div>
 
       {/* Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Admin Button */}
-        <div className="flex justify-center mb-6">
-          <button
-            onClick={onShowAdmin}
-            className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-neomorphism rounded-xl font-medium text-sm"
-          >
-            <Settings size={16} />
-            Make Your Own
-          </button>
-        </div>
+ <div className="max-w-4xl mx-auto px-4 py-8">
+  {/* Admin Button and Search */}
+  <div className="flex flex-col items-center gap-4 mb-6">
+    <button
+      onClick={onShowAdmin}
+      className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-neomorphism rounded-xl font-medium text-sm"
+    >
+      <Settings size={16} />
+      Make your own
+    </button>
+    
+    {/* Search Bar */}
+    <div className="relative w-full sm:w-80">
+      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <Search className="h-4 w-4 text-gray-500" />
+      </div>
+      <input
+        type="text"
+        placeholder="Search tier lists..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full pl-10 pr-4 py-2 neomorphism-inset rounded-xl focus:outline-none text-neomorphism placeholder-gray-500 text-sm"
+      />
+    </div>
+  </div>
 
         {/* Tier Lists Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {tierLists.map((tierList) => (
+          {filteredTierLists.map((tierList) => (
             <div
               key={tierList.id}
               onClick={() => onSelectTierList(tierList)}
@@ -139,7 +170,7 @@ export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSele
           ))}
         </div>
 
-        {tierLists.length === 0 && (
+        {tierLists.length === 0 && !loading && (
           <div className="text-center py-12">
             <p className="text-gray-700 mb-4">No tier lists found</p>
             <button
@@ -147,6 +178,18 @@ export function TierListSelector({ onSelectTierList, onShowAdmin }: TierListSele
               className="px-6 py-3 neomorphism neomorphism-hover text-neomorphism rounded-xl font-medium"
             >
               Create Your First Tier List
+            </button>
+          </div>
+        )}
+
+        {filteredTierLists.length === 0 && tierLists.length > 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-700 mb-4">No tier lists match your search</p>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="px-6 py-3 neomorphism neomorphism-hover text-neomorphism rounded-xl font-medium"
+            >
+              Clear Search
             </button>
           </div>
         )}

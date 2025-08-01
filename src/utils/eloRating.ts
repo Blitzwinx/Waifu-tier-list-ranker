@@ -1,3 +1,5 @@
+import { Character } from '../lib/supabase'
+
 /**
  * Elo Rating System Implementation
  * Used to calculate character rankings based on head-to-head comparisons
@@ -120,18 +122,18 @@ export function eloToTier(rating: number): string {
 }
 
 /**
- * Get tier color for styling
- * @param tier Tier letter
+ * Get default tier colors (fallback)
+ * @param tierPosition Tier position (0-5)
  * @returns CSS color class
  */
-export function getTierColor(tier: string): string {
-  switch (tier) {
-    case 'S': return 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white'
-    case 'A': return 'bg-gradient-to-r from-gray-300 to-gray-400 text-black'
-    case 'B': return 'bg-gradient-to-r from-orange-400 to-orange-600 text-white'
-    case 'C': return 'bg-gradient-to-r from-green-400 to-green-600 text-white'
-    case 'D': return 'bg-gradient-to-r from-blue-400 to-blue-600 text-white'
-    case 'F': return 'bg-gradient-to-r from-red-400 to-red-600 text-white'
-    default: return 'bg-gray-500 text-white'
+export function getDefaultTierColor(tierPosition: number): string {
+  switch (tierPosition) {
+    case 0: return 'bg-gradient-to-r from-red-500 to-pink-600 text-white' // S-Tier
+    case 1: return 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white' // A-Tier
+    case 2: return 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' // B-Tier
+    case 3: return 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white' // C-Tier
+    case 4: return 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' // D-Tier
+    case 5: return 'bg-gradient-to-r from-gray-600 to-slate-700 text-white' // F-Tier
+    default: return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
   }
 }

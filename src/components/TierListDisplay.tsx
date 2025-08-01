@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, RotateCcw } from 'lucide-react'
-import { Character, TierList } from '../lib/supabase'
+import { Character, TierList, TierLabel } from '../lib/supabase'
 import { TierListService } from '../services/tierListService'
-import { distributeCharactersAcrossTiers, getTierColor } from '../utils/eloRating'
+import { distributeCharactersAcrossTiers, getDefaultTierColor } from '../utils/eloRating'
 
 interface TierListDisplayProps {
   tierList: TierList
@@ -12,19 +12,24 @@ interface TierListDisplayProps {
 
 export function TierListDisplay({ tierList, onBack, onCompare }: TierListDisplayProps) {
   const [characters, setCharacters] = useState<Character[]>([])
+  const [tierLabels, setTierLabels] = useState<TierLabel[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadCharacters()
+    loadData()
   }, [tierList.id])
 
-  const loadCharacters = async () => {
+  const loadData = async () => {
     try {
       setLoading(true)
-      const chars = await TierListService.getCharacters(tierList.id)
+      const [chars, labels] = await Promise.all([
+        TierListService.getCharacters(tierList.id),
+        TierListService.getTierLabels(tierList.id)
+      ])
       setCharacters(chars)
+      setTierLabels(labels)
     } catch (error) {
-      console.error('Failed to load characters:', error)
+      console.error('Failed to load data:', error)
     } finally {
       setLoading(false)
     }
@@ -47,6 +52,15 @@ export function TierListDisplay({ tierList, onBack, onCompare }: TierListDisplay
 
   const tiersData = distributeCharactersAcrossTiers(characters)
 
+  // Create a map of tier labels by position for easy lookup
+  const tierLabelMap = tierLabels.reduce((acc, label) => {
+    acc[label.tier_position] = label
+    return acc
+  }, {} as Record<number, TierLabel>)
+
+  // Map tier positions to tier keys
+  const tierPositions = { S: 0, A: 1, B: 2, C: 3, D: 4, F: 5 }
+
   return (
     <div className="min-h-screen bg-neomorphism">
       {/* Header */}
@@ -67,7 +81,7 @@ export function TierListDisplay({ tierList, onBack, onCompare }: TierListDisplay
 
           <div className="flex gap-2">
             <button
-              onClick={loadCharacters}
+              onClick={loadData}
               className="flex items-center gap-2 px-3 py-2 neomorphism-small neomorphism-hover text-neomorphism rounded-xl text-sm font-medium"
             >
               <RotateCcw size={16} />
@@ -86,12 +100,18 @@ export function TierListDisplay({ tierList, onBack, onCompare }: TierListDisplay
       {/* Tier List */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         <div className="space-y-4">
-          {Object.entries(tiersData).map(([tier, tierCharacters]) => (
+          {Object.entries(tiersData).map(([tier, tierCharacters]) => {
+            const tierPosition = tierPositions[tier as keyof typeof tierPositions]
+            const tierLabel = tierLabelMap[tierPosition]
+            const displayLabel = tierLabel?.label || tier
+            const colorClass = tierLabel?.color_class || getDefaultTierColor(tierPosition)
+            
+            return (
             <div key={tier} className="neomorphism rounded-2xl overflow-hidden">
               <div className="flex flex-col sm:flex-row">
                 {/* Tier Label */}
-                <div className={`w-full sm:w-20 flex items-center justify-center py-4 sm:py-8 ${getTierColor(tier)}`}>
-                  <span className="text-2xl sm:text-4xl font-bold">{tier}</span>
+                <div className={`w-full sm:w-32 flex items-center justify-center py-4 sm:py-8 ${colorClass}`}>
+                  <span className="text-lg sm:text-2xl font-bold text-center px-2">{displayLabel}</span>
                 </div>
 
                 {/* Characters in Tier */}
@@ -132,7 +152,7 @@ export function TierListDisplay({ tierList, onBack, onCompare }: TierListDisplay
                 </div>
               </div>
             </div>
-          ))}
+          )})}
         </div>
 
         {characters.length === 0 && (

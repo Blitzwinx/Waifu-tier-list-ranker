@@ -36,3 +36,12 @@ export interface Comparison {
   winner_id: string
   created_at: string
 }
+
+export interface TierLabel {
+  id: string
+  tier_list_id: string
+  tier_position: number
+  label: string
+  color_class: string
+  created_at: string
+}

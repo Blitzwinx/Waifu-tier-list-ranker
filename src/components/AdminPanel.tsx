@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Plus, Edit2, Trash2, Save, X } from 'lucide-react'
-import { TierList, Character } from '../lib/supabase'
+import { ArrowLeft, Plus, Edit2, Trash2, Save, X, Palette } from 'lucide-react'
+import { TierList, Character, TierLabel } from '../lib/supabase'
 import { TierListService } from '../services/tierListService'
 import { ImageService } from '../services/imageService'
 
@@ -14,9 +14,11 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
   const [tierLists, setTierLists] = useState<TierList[]>([])
   const [selectedTierList, setSelectedTierList] = useState<TierList | null>(null)
   const [characters, setCharacters] = useState<Character[]>([])
+  const [tierLabels, setTierLabels] = useState<TierLabel[]>([])
   const [loading, setLoading] = useState(true)
   const [editingTierList, setEditingTierList] = useState<string | null>(null)
   const [editingCharacter, setEditingCharacter] = useState<string | null>(null)
+  const [editingTierLabels, setEditingTierLabels] = useState(false)
   const [newTierList, setNewTierList] = useState({ name: '', description: '', thumbnailUrl: '', makerName: '' })
   const [newCharacter, setNewCharacter] = useState({ name: '', imageUrl: '' })
   const [showNewTierListForm, setShowNewTierListForm] = useState(false)
@@ -30,7 +32,7 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
 
   useEffect(() => {
     if (selectedTierList) {
-      loadCharacters(selectedTierList.id)
+      loadTierListData(selectedTierList.id)
     }
   }, [selectedTierList])
 
@@ -62,12 +64,16 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
     }
   }
 
-  const loadCharacters = async (tierListId: string) => {
+  const loadTierListData = async (tierListId: string) => {
     try {
-      const chars = await TierListService.getCharacters(tierListId)
+      const [chars, labels] = await Promise.all([
+        TierListService.getCharacters(tierListId),
+        TierListService.getTierLabels(tierListId)
+      ])
       setCharacters(chars)
+      setTierLabels(labels)
     } catch (error) {
-      console.error('Failed to load characters:', error)
+      console.error('Failed to load tier list data:', error)
     }
   }
 
@@ -92,7 +98,19 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
 
   const handleUpdateTierList = async (id: string, updates: Partial<TierList>) => {
     try {
-      const updated = await TierListService.updateTierList(id, updates)
+      // Convert camelCase to snake_case for database
+      const dbUpdates: any = {}
+      Object.entries(updates).forEach(([key, value]) => {
+        if (key === 'thumbnailUrl') {
+          dbUpdates.thumbnail_url = value
+        } else if (key === 'makerName') {
+          dbUpdates.maker_name = value
+        } else {
+          dbUpdates[key] = value
+        }
+      })
+      
+      const updated = await TierListService.updateTierList(id, dbUpdates)
       setTierLists(tierLists.map(tl => tl.id === id ? updated : tl))
       if (selectedTierList?.id === id) {
         setSelectedTierList(updated)
@@ -171,6 +189,35 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
     }
   }
 
+  const handleUpdateTierLabel = async (tierPosition: number, label: string, colorClass: string) => {
+    if (!selectedTierList) return
+
+    try {
+      await TierListService.updateTierLabel(selectedTierList.id, tierPosition, label, colorClass)
+      const updatedLabels = tierLabels.map(tl => 
+        tl.tier_position === tierPosition 
+          ? { ...tl, label, color_class: colorClass }
+          : tl
+      )
+      setTierLabels(updatedLabels)
+    } catch (error) {
+      console.error('Failed to update tier label:', error)
+    }
+  }
+
+  // Predefined color options for tier labels
+  const colorOptions = [
+    { name: 'Red-Pink', class: 'bg-gradient-to-r from-red-500 to-pink-600 text-white' },
+    { name: 'Orange-Yellow', class: 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white' },
+    { name: 'Green-Emerald', class: 'bg-gradient-to-r from-green-500 to-emerald-600 text-white' },
+    { name: 'Blue-Cyan', class: 'bg-gradient-to-r from-blue-500 to-cyan-600 text-white' },
+    { name: 'Purple-Indigo', class: 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' },
+    { name: 'Gray-Slate', class: 'bg-gradient-to-r from-gray-600 to-slate-700 text-white' },
+    { name: 'Teal-Blue', class: 'bg-gradient-to-r from-teal-500 to-blue-600 text-white' },
+    { name: 'Pink-Purple', class: 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' },
+    { name: 'Yellow-Orange', class: 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white' },
+    { name: 'Emerald-Teal', class: 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white' }
+  ]
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -207,7 +254,7 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Tier Lists Management */}
           <div className="neomorphism rounded-2xl p-4 lg:p-6">
             <div className="flex items-center justify-between mb-6">
@@ -479,6 +526,70 @@ export function AdminPanel({ onBack }: AdminPanelProps) {
                   <p className="text-gray-700 text-center py-8">No characters in this tier list</p>
                 )}
               </>
+            )}
+          </div>
+
+          {/* Tier Labels Management */}
+          <div className="neomorphism rounded-2xl p-4 lg:p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-neomorphism">
+                Tier Labels
+                {selectedTierList && (
+                  <span className="text-lg font-normal text-gray-700 ml-2">
+                    ({selectedTierList.name})
+                  </span>
+                )}
+              </h2>
+              {selectedTierList && (
+                <button
+                  onClick={() => setEditingTierLabels(!editingTierLabels)}
+                  className="flex items-center gap-2 px-4 py-2 neomorphism-small neomorphism-hover text-purple-700 rounded-xl font-medium"
+                >
+                  <Palette size={20} />
+                  {editingTierLabels ? 'Done' : 'Edit'}
+                </button>
+              )}
+            </div>
+            {!selectedTierList ? (
+              <p className="text-gray-700">Select a tier list to manage tier labels</p>
+            ) : (
+              <div className="space-y-3">
+                {tierLabels.map((tierLabel) => (
+                  <div key={tierLabel.id} className="p-4 neomorphism-small rounded-xl">
+                    {editingTierLabels ? (
+                      <div className="space-y-3">
+                        <input
+                          type="text"
+                          defaultValue={tierLabel.label}
+                          onBlur={(e) => handleUpdateTierLabel(tierLabel.tier_position, e.target.value, tierLabel.color_class)}
+                          className="w-full px-3 py-2 neomorphism-inset rounded-xl focus:outline-none text-neomorphism font-semibold"
+                        />
+                        <div className="grid grid-cols-2 gap-2">
+                          {colorOptions.map((color) => (
+                            <button
+                              key={color.name}
+                              onClick={() => handleUpdateTierLabel(tierLabel.tier_position, tierLabel.label, color.class)}
+                              className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${color.class} ${
+                                tierLabel.color_class === color.class ? 'ring-2 ring-offset-2 ring-blue-500' : ''
+                              }`}
+                            >
+                              {color.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={`px-4 py-2 rounded-xl font-bold ${tierLabel.color_class}`}>
+                            {tierLabel.label}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
