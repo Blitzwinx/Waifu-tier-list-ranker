@@ -44,9 +44,11 @@ export function ComparisonView({ tierList, onBack, onShowTierList }: ComparisonV
       const pairs: ComparisonPair[] = []
       for (let i = 0; i < characters.length; i++) {
         for (let j = i + 1; j < characters.length; j++) {
+          // Randomly decide which character goes on left vs right
+          const randomOrder = Math.random() < 0.5
           pairs.push({
-            char1: characters[i],
-            char2: characters[j]
+            char1: randomOrder ? characters[i] : characters[j],
+            char2: randomOrder ? characters[j] : characters[i]
           })
         }
       }
